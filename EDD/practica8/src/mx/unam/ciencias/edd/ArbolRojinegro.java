@@ -31,9 +31,10 @@ public class ArbolRojinegro<T extends Comparable<T>>
      */
     @Override public VerticeArbolBinario<T> agrega(T elemento) {
         
-        VerticeArbolBinario<T> vM= super.agrega(elemento);
-        rebalancear(vertice(vM));
-        return vM;
+        super.agrega(elemento);
+		VerticeRojinegro agregado = verticeRojinegro(ultimoAgregado);
+		agregado.color = Color.ROJO;
+		rebalanceaA(agregado);
      
     }
     /*Recibe como parametro un vertice rojo
@@ -41,53 +42,28 @@ public class ArbolRojinegro<T extends Comparable<T>>
         
     private void rebalancear(ArbolBinario<T>.Vertice<T> v)
     {
+        //Caso 1: el padre de v es vacio
+		if (!v.hayPadre()) {
+			v.color = Color.NEGRO;
+			return;
+		}
+		//Caso 2: el color del padre es NEGRO
+		VerticeRojinegro padre = verticeRojinegro(v.padre);
+		if (getColor(padre) == Color.NEGRO)
+			return;
 
-        //ES RAIZ
-        if(!v.hayPadre())
-        {
-            v.cambiaColor();
-            return;
-        }
-        //EL PADRE ES NEGRO
-        if(esNegro(v.padre))
-            return;
-        
-        //TIO ROJO?
-        if(tioEsRojo(v))
-        {
-            cambiaALosViejosDeColor(v);
-            rebalancear(v.padre.padre);
-            return;
-            
-        }
-        //V y PADRE ESTAN CRUZADOS?
-        if(padreCruzadoCon(v))
-        {
-                if(esIzqDePadre(v))
-                {
-                    giraDerecha(v.padre);
-                    if(v.hayDerecho())
-                        v= v.derecho;
-                }
-                else
-                {
-                    giraIzquierda(v.padre);
-                    if(v.hayIzquierdo())
-                        v=v.izquierdo;
-                }
-        }
-        //Contrario V Y P NO cruzados.
-        if (!padreCruzadoCon(v))
-        {
-            v.padre.cambiaColor();
-            v.padre.padre.cambiaColor();
-            
-            if (esIzqDePadre(v))
-                giraDerecha(v.padre.padre);
-        
-            else
-                giraIzquierda(v.padre.padre);
-        }
+		//Caso 3: el tio es rojo
+		VerticeRojinegro abuelo = verticeRojinegro(padre.padre);
+		VerticeRojinegro tio;
+		if (esHijoIzquierdo(padre)) {
+			tio = verticeRojinegro(abuelo.derecho);
+		} else tio = verticeRojinegro(abuelo.izquierdo);
+		if (tio != null && tio.color == Color.ROJO) {
+			tio.color = Color.NEGRO;
+			padre.color = Color.NEGRO;
+			abuelo.color = Color.ROJO;
+			rebalanceaA(abuelo);
+			return;
     }
         
         /** vertice tiene linea recta con su respectivo padre y abuelo?*/
