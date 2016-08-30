@@ -39,23 +39,16 @@ public abstract class MeteSaca<T> {
      * @throws NoSuchElementException si la estructura está vacía.
      */
     public T saca() {
-        // Aquí va su código.
-        T cabezon = null;
-        if (!esVacia())
-        {
-            elementos--;
-            cabezon =cabeza.elemento;
-            if (cabeza == rabo)
-                cabeza = rabo = null;
-            else
-                cabeza = cabeza.siguiente;
-            
-        }else
-        {
-            throw new NoSuchElementException("la estructura esta vacia");
-        }
-        return cabezon;
-        
+        if(this.cabeza == null){
+	    throw new  NoSuchElementException("Lista vacía.");
+	}
+	T el = cabeza.elemento;
+	cabeza = cabeza.siguiente;
+	if(cabeza == null){
+	    rabo = null;
+	  }
+	elementos--;
+	return el;
     }
 
     /**
@@ -65,16 +58,9 @@ public abstract class MeteSaca<T> {
      * @throws NoSuchElementException si la estructura está vacía.
      */
     public T mira() {
-
-        T cabezon = null;
-        if (!esVacia())
-        {
-            cabezon =cabeza.elemento;
-        }else
-        {
-            throw new NoSuchElementException("la estructura esta vacia");
-        }
-        return cabezon;
+    if (cabeza == null)
+            throw new NoSuchElementException("Lista vacía.");
+	 return cabeza.elemento; 
         
     }
 
@@ -84,12 +70,26 @@ public abstract class MeteSaca<T> {
      *         <tt>false</tt> en otro caso.
      */
     public boolean esVacia() {
-        // Aquí va su código.
-        boolean isEmpty = false;
-        if (cabeza == null && rabo == null)
-            isEmpty = true;
-        return isEmpty;
-        
-        
+        if(cabeza == null && rabo == null){
+	    return true;
+	}
+	return cabeza == null;
+    }
+    
+    @Override public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass())
+            return false;
+        @SuppressWarnings("unchecked") MeteSaca<T> m = (MeteSaca<T>)o;
+	Nodo t1 = cabeza;
+        Nodo t2 = m.cabeza;
+        while (t1 != null && t2 != null) {
+            if (!t1.elemento.equals(t2.elemento))
+                return false;
+            t1 = t1.siguiente;
+            t2 = t2.siguiente;
+        }
+        if (t1 != null || t2 != null) //diferentes logintudes
+            return false;
+        return true;
     }
 }
