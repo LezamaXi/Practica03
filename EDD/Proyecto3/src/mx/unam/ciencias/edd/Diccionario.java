@@ -126,7 +126,7 @@ public class Diccionario<K, V> implements Iterable<V> {
      * @param tam el tamaño a utilizar.
      */
     public Diccionario(int tam) {
-        this(tam, null);
+        this(tam, (K o)->o.hashCode());
 
        
         
@@ -152,14 +152,9 @@ public class Diccionario<K, V> implements Iterable<V> {
      * @param huella la huella digital a utilizar.
      */
     public Diccionario(int tam, HuellaDigital<K> h) {
-
-        huella = h;
-        if(tam < MIN_N)
-            tam = MIN_N;
-        entradas= this.nuevoArreglo(tam);
-        total = 0;
-        mascara  =(int) Math.floor((Math.log(tam)/Math.log(2))) +1;
-//         System.out.println("Mascara: "+mascara);
+        this.h = h;
+        mascara = tam < MIN_N ? mascara(MIN_N) : mascara(tam);
+        entradas = nuevoArreglo(mascara + 1);
     }
 
     /**
@@ -172,55 +167,36 @@ public class Diccionario<K, V> implements Iterable<V> {
      */
 
     public void agrega(K llave, V v) {
-        
-        
-        
-        int i  = indice(llave);
-        
-        
-//        System.out.println("LLave: "+llave+" I: "+i);
-        
-        Lista<Entrada<K,V>> l  = getLista(i, true);
-        Entrada<K,V> e = buscaEntrada(llave, l);
-        if(e!=null)
-            e.valor =v;
-        else
-        {
-            
-            e = new Entrada<K,V>(llave, v);
+        if (llave == null || valor == null)
+            throw new IllegalArgumentException();
+        int i  = calculaIndice(llave);
+        Lista<Entrada> l  = getLista(i);
+        Entrada e = buscaEntrada(llave, l);
+        if (e != null)
+            e.valor = valor;
+        else {
+            e = new Entrada(llave, valor);
             l.agregaFinal(e);
-            total++;
+            elementos++;
         }
-        
-        
-
-        if(this.carga()>=MAXIMA_CARGA)
-            creceArreglo();
+        if (this.carga() >= MAXIMA_CARGA)
+            crecer();
     }
 
     private Entrada<K,V> buscaEntrada(K k, Lista<Entrada<K,V>> l)
     {
-        
-        Entrada<K,V> f = null;
-        if(l!=null)
-        for(Entrada<K,V> e: l)
-            
-            if(k.equals(e.key))
-            {
-                f = e;
-                break;
-            }
-        
-        return f;
+        for (Entrada e : lista) {
+            if (e.llave.equals(llave))
+                return e;
+        }
+        return null;
     }
     //true boolean si quiero que se cree
     private Lista<Entrada<K,V>> getLista(int i, boolean b)
     {
-        
-        Lista<Entrada<K,V>> m = entradas[i];
-        if(m==null && b){
-            entradas[i] = new Lista<Entrada<K,V>>();
-            m = entradas[i];
+        if (entradas[indice] == null)
+            entradas[indice] = new Lista<Entrada>();
+        return entradas[indice];
             
         }
         
@@ -393,20 +369,13 @@ public class Diccionario<K, V> implements Iterable<V> {
      * @return el máximo número de colisiones para una misma llave.
      */
     public int colisionMaxima() {
-        
-        
-        int col = 0;
-        
-        for(Lista<Entrada<K, V>> e: entradas)
-        {
-            if(e==null)
-                continue;
-            
-            if(e.getLongitud()>col)
-            col=e.getLongitud();
+        int boms = 0;
+        for (Lista<Entrada> e : entradas) {
+            if (e != null) {
+                boms += e.getElementos() - 1;
+            }
         }
-
-        return col-1;
+        return boms;
     }
 
     /**
